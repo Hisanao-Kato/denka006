@@ -1,6 +1,5 @@
 #ifndef _DENKAMAIN_H
 #define _DENKAMAIN_H
-
 /**
  * denkamain.h
  * -------------------
@@ -10,5 +9,7 @@
 
  //Include Files
 
+// public function prototiping
+void main_timerproc(void);
 
 #endif
