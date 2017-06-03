@@ -54,7 +54,9 @@ Beepobject *bp;
  */
 void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void){
 	static char counter = 0;
-
+	IFS0bits.T3IF = 0;
+	
+	return; //debug
 	// inputkey
 	checkkey();
 	// outputbeep
@@ -330,5 +332,6 @@ void checkkey(void){
 void delay_us(long usec){
 	while(usec){
 		DELAY;
+		usec--;
 	}
 }

@@ -8,7 +8,10 @@
 // Include Files
 #include "denkamain.h"
 #include "denkahw.h"
+#include "sectorobject.h"
 #include <stdlib.h>
+
+#define DAY 864000
 
 // function prototiping
 
@@ -33,6 +36,42 @@ int main(void){
 	hwobj->mainbuf_i[1] = 'B';
 	setbeep(BP_ACK);
 
+	Sectorobj* sectobj = (Sectorobj*)calloc(1, sizeof(Sectorobj));
+	sectobj = newsectorobject(sectobj, 1, AVERAGESECTOR, &nowtime);
+
+	nowtime = 0;
+	sectobj[0].starttime = 1;
+	sectobj[0].average = 10;
+	sectobj[0].distance = 0;
+
+	sectortimecalc(&sectobj[0]);
+	DELAY;
+
+	nowtime = 863999;
+	sectobj[0].starttime = 0;
+	sectobj[0].average = 10;
+	sectobj[0].distance = 0;
+
+	sectortimecalc(&sectobj[0]);
+	DELAY;
+
+	nowtime = 0;
+	sectobj[0].starttime = 863999;
+	sectobj[0].average = 10;
+	sectobj[0].distance = 0;
+
+	sectortimecalc(&sectobj[0]);
+	DELAY;
+
+	nowtime = 1;
+	sectobj[0].starttime = 0;
+	sectobj[0].average = 10;
+	sectobj[0].distance = 100;
+
+	sectortimecalc(&sectobj[0]);
+	DELAY;
+
+	// test end
 
 	// for debug roop
 	while(1){
@@ -45,6 +84,7 @@ void main_timerproc(void){
 
 	if(counter > 9){
 		nowtime++;
+		if(nowtime >= DAY){nowtime -= DAY;}
 		counter = 0;
 	}
 	// debug
@@ -53,6 +93,7 @@ void main_timerproc(void){
 	makedisp(nowtime, MAIN_FIRST, V_DBG);
 	makedisp(testval1, MAIN_SECOND, V_DBG);
 	makedisp(testval2, MAIN_THIRD, V_DBG);
+
 
 	// Calc Time
 
