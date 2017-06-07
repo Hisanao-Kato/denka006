@@ -11,7 +11,10 @@
 #define TCSECTOR 1
 #define SSSECTOR 2
 
-#define DAYTIME 864000	//TODO:どっちにすっかなぁ
+#define DAYTIME 864000
+
+#define SUCCESS 0
+#define FAILED -1
 
 typedef struct{
 	unsigned char sectortype;
@@ -27,3 +30,4 @@ typedef struct{
 // define public function
 Sectorobj* newsectorobject(Sectorobj* sectobj, long num, unsigned char secttype, long* now);
 void sectortimecalc(Sectorobj* sectobj);
+char setsectoraverage(Sectorobj* sectobj, long setvalue);

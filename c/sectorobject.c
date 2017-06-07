@@ -51,7 +51,19 @@ void sectortimecalc(Sectorobj* sectobj){
 			break;
 		}
 		case SSSECTOR:{
+			sectobj->finaltime = *sectobj->nowtime - sectobj->starttime;
+			if(sectobj->finaltime < 0){
+				sectobj->finaltime += DAYTIME;
+			}
 			break;
 		}
 	}
+}
+
+char setsectoraverage(Sectorobj* sectobj, long setvalue){
+	if(setvalue <= 0 || setvalue >= 2000){	// 0.1 to 199.9 abailavle
+		return FAILED;
+	}
+	sectobj->average = setvalue / 3.6;
+	return SUCCESS;
 }
