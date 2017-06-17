@@ -48,6 +48,9 @@ typedef struct{
 // private value
 HardwareObject* hw;
 Beepobject *bp;
+long hwadddist;
+char trpvect[3][2] = {{NTL,NTL},{FWD,REV},{REV,FWD}};
+unsigned long pulsedist;
 
 /**
  * Timer3 Interrupt
@@ -55,22 +58,27 @@ Beepobject *bp;
 void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void){
 	static char counter = 0;
 	IFS0bits.T3IF = 0;
-	
-	return; //debug
+	counter++;
+
+	//return; //debug
+	delay_us(1);
+	delay_us(100);
+	delay_us(257);
+	delay_us(10000);
 	// inputkey
 	checkkey();
 	// outputbeep
 	outputbeep();
+	// mainproc
+	main_timerproc();
 
-	counter++;
 
 	if(counter > 9){
 		//outputmaindisp
+		outputmaindisp();
 		counter = 0;
 	}
 
-	// mainproc
-	main_timerproc();
 
 }
 
@@ -122,6 +130,9 @@ HardwareObject* hardwareinit(void){
 
 	hw = (HardwareObject*)calloc(1, sizeof(HardwareObject));
 	bp = (Beepobject*)calloc(1, sizeof(Beepobject));
+
+	hw->distcalib = 1;
+	pulsedist = PULSE_4;
 
     return hw;
 }
@@ -206,6 +217,15 @@ void makedisp(long value, char whitch, char changetype){
 			break;
 		}
 		case V_TIME:{
+			if(value < 0){
+				value *= -1;
+				target[0] = '-';
+			}
+			target[1] = ((value % 36000) / 6000) + 0xA0;
+			target[2] = ((value % 6000) / 600) + 0xD0;
+			target[3] = ((value % 600) / 100) + 0xA0;
+			target[4] = ((value % 100) / 10) + 0xD0;
+			target[5] = (value % 10) + 0xA0;
 			break;
 		}
 		case V_DIST:{
@@ -241,7 +261,7 @@ void makedisp(long value, char whitch, char changetype){
  * Beep関係
  */
 void setbeep(long beeptype){
-	if(bp->beepcounter != 0){
+	if(bp->beepcounter >= 32){
 		return;
 	}
 	bp->beepcounter = 0;
@@ -249,13 +269,13 @@ void setbeep(long beeptype){
 }
 void outputbeep(void){
 	if(bp->beepcounter >= 32){
-		bp->beepcounter = 0;
+		bp->beepcounter = 32;
 		BEEP = 0;
 		return;
 	}
 	BEEP = bp->beeptable >> bp->beepcounter & 0x1;
 	bp->beepcounter++;
-	delay_us(15000);
+	delay_us(1500);
 	BEEP = bp->beeptable >> bp->beepcounter & 0x1;
 	bp->beepcounter++;
 }
@@ -326,6 +346,56 @@ void checkkey(void){
 
 }
 
+/**
+ * Distance関係
+ */
+void calc_dist(void){
+
+	static signed long distbuf = 0;
+
+	delay_us(13);	if(SPEED == 1){return;}
+	delay_us(13);	if(SPEED == 1){return;}
+	delay_us(26);	if(SPEED == 1){return;}
+	delay_us(54);	if(SPEED == 1){return;}
+	delay_us(108);	if(SPEED == 1){return;}
+	delay_us(216);	if(SPEED == 1){return;}
+	delay_us(30);	if(SPEED == 1){return;}
+
+	switch(trpvect[hw->tripvector][BACK]){
+		case NTL:{break;}
+		case FWD:{
+			distbuf += (long)(pulsedist / hw->distcalib);
+			break;
+		}
+		case REV:{
+			distbuf -= (long)(pulsedist / hw->distcalib);
+			break;
+		}
+		default:{break;}
+	}
+	if(distbuf != 0){
+		hwadddist += distbuf / 1000000000;
+		distbuf	%= 1000000000;
+	}
+}
+
+long gethwadddist(void){
+	long ret = hwadddist;
+	hwadddist = 0;
+	return ret;
+}
+
+void settripvector(unsigned char tripvect){
+	hw->tripvector = tripvect;
+}
+
+void calctripcalib(long officialtrip, long selftrip){
+	hw->distcalib = officialtrip / selftrip;
+}
+
+void setpulse(long value){
+	pulsedist = value;
+}
 /**
  * delay_us
  */

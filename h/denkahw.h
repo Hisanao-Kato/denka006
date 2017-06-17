@@ -62,6 +62,14 @@
 #define BP_ACK 0x3
 #define BP_NACK 0x15
 
+#define NTL 0
+#define FWD 1
+#define REV 2
+
+#define PULSE_4 392464678
+#define PULSE_2 784929356
+#define PULSE_8 196232339
+
 #define DELAY asm("NOP");
 
 // define object
@@ -75,7 +83,8 @@ typedef struct {
 	unsigned char extbuf_t[6];
 
 	unsigned char keystat;
-
+	unsigned char tripvector;
+	double distcalib;
 }HardwareObject;
 
 // function prototiping
@@ -83,5 +92,10 @@ HardwareObject* hardwareinit(void);
 char returninitmode(void);
 void makedisp(long value, char whitch, char changetype);
 void setbeep(long beeptype);
+long getadddistance(void);
+void settripvector(unsigned char tripvect);
+void calctripcalib(long officialtrip, long selftrip);
+void setpulse(long value);
+long gethwadddist(void);
 
 #endif

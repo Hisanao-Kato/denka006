@@ -11,7 +11,11 @@
 Sectorobj* newsectorobject(Sectorobj* sectobj, long num, unsigned char secttype, long* now){
 	Sectorobj* ret;
 
-	ret = (Sectorobj*)realloc(sectobj, sizeof(Sectorobj)*num);
+	if(sectobj == NULL){
+		ret = (Sectorobj*)calloc(num, sizeof(Sectorobj));
+	}else{
+		ret = (Sectorobj*)realloc(sectobj, sizeof(Sectorobj)*num);
+	}
 	if(ret == NULL){
 		return ret;
 	}

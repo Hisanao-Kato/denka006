@@ -18,7 +18,11 @@
 // private values
 
 // private values
-HardwareObject *hwobj;
+HardwareObject* hwobj;
+Sectorobj* sectobj;
+
+long sectcounter;
+long checkcounter;
 
 //debug value
 long nowtime;
@@ -30,13 +34,29 @@ int main(void){
 	char initmode = returninitmode();
 	hwobj = hardwareinit();
 
+	sectcounter = 1;
+	checkcounter = 1;
+
+	switch(initmode){
+		case INITMODE_AVERAGE:{
+			sectobj = newsectorobject(NULL, sectcounter, AVERAGESECTOR, &nowtime);
+			break;
+		}
+		case INITMODE_TC:{
+			break;
+		}
+		case INITMODE_OFFICIAL:{
+			break;
+		}
+	}
+
 
 	//test
 	hwobj->mainbuf_i[0] = 'A';
 	hwobj->mainbuf_i[1] = 'B';
 	setbeep(BP_ACK);
 
-	Sectorobj* sectobj = (Sectorobj*)calloc(1, sizeof(Sectorobj));
+	sectobj = (Sectorobj*)calloc(1, sizeof(Sectorobj));
 	sectobj = newsectorobject(sectobj, 1, AVERAGESECTOR, &nowtime);
 
 	nowtime = 0;
@@ -82,21 +102,21 @@ void main_timerproc(void){
 	static char counter = 0;
 	counter++;
 
+	// dist update
+
+	// input check
+	
 	if(counter > 9){
 		nowtime++;
 		if(nowtime >= DAY){nowtime -= DAY;}
+		// calc Time
+		sectortimecalc(&sectobj[sectcounter - 1]);
+
+		// display change
+		makedisp(nowtime, MAIN_FIRST, V_CLOCK);
+		makedisp(sectobj[sectcounter-1].finaltime, MAIN_SECOND, V_TIME);
+		makedisp(testval2, MAIN_THIRD, V_DIST);
+
 		counter = 0;
 	}
-	// debug
-	testval1++;
-	testval2+=100;
-	makedisp(nowtime, MAIN_FIRST, V_DBG);
-	makedisp(testval1, MAIN_SECOND, V_DBG);
-	makedisp(testval2, MAIN_THIRD, V_DBG);
-
-
-	// Calc Time
-
-	// View Output
-
 }
